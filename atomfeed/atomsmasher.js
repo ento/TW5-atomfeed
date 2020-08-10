@@ -58,7 +58,6 @@ Encapsulating class for constructing atom feeds
   function AtomSmasher(options) {
     this.wiki = options.wiki;
     this.document = options.document || window.document;
-    this.metadata = this.lookupMetadata();
   }
 
   /**
@@ -181,6 +180,7 @@ Encapsulating class for constructing atom feeds
    * @public
    */
   AtomSmasher.prototype.feedify = function feedify(titles) {
+    this.metadata = this.lookupMetadata();
     var feed = this.atomFeed();
     titles.forEach(function(title) {
       feed.add(this.atomEntry(this.wiki.getTiddler(title)));

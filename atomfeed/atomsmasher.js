@@ -13,11 +13,6 @@ Encapsulating class for constructing atom feeds
 (function() { // jshint ignore:line
   var uuidHasher = require('$:/plugins/dullroar/atomfeed/md5hashToGuid');
 
-  // jshint ignore:start
-  var LAST_UPDATED_FILTER =
-    '[!is[system]!has[draft.of]!untagged[]!tag[static]!is[tag]!sort[modified]limit[1]]';
-  // jshint ignore:end
-
   function toISODate(twDateString) {
     if (!twDateString) { return ''; }
     var twDate = $tw.utils.parseDate(twDateString);
@@ -63,21 +58,23 @@ Encapsulating class for constructing atom feeds
   /**
    * Lookup site information for caching
    * @method lookupMetadata
+   * @param {Array} tiddlers list of tiddlers to process
    * @return {Object} hash of metadata
    * @private
    */
-  AtomSmasher.prototype.lookupMetadata = function lookupMetadata() {
+  AtomSmasher.prototype.lookupMetadata = function lookupMetadata(tiddlers) {
     var atomserver = this.wiki.getTiddlerText('$:/config/atomserver');
-    var lastUpdatedTiddler =
-      this.wiki.getTiddler(this.wiki.filterTiddlers(LAST_UPDATED_FILTER)[0]);
+    var lastUpdatedTiddler = Array.from(tiddlers).sort(function(a, b) {
+      return b.fields.modified - a.fields.modified;
+    })[0];
     var sitetitle = this.wiki.getTiddlerText('$:/SiteTitle');
     return {
       title:    sitetitle,
       subtitle: this.wiki.getTiddlerText('$:/SiteSubtitle'),
       feedhref: pathJoin([atomserver, 'atom.xml']),
       sitehref: atomserver,
-      author:   lastUpdatedTiddler.fields.creator,
-      updated:  toISODate(lastUpdatedTiddler.fields.modified),
+      author:   lastUpdatedTiddler ? lastUpdatedTiddler.fields.creator : '',
+      updated:  lastUpdatedTiddler ? toISODate(lastUpdatedTiddler.fields.modified) : '',
       uuid:     uuidHasher.run(sitetitle),
     };
   };
@@ -180,10 +177,13 @@ Encapsulating class for constructing atom feeds
    * @public
    */
   AtomSmasher.prototype.feedify = function feedify(titles) {
-    this.metadata = this.lookupMetadata();
+    var tiddlers = titles.map(function(title) {
+      return this.wiki.getTiddler(title);
+    }, this);
+    this.metadata = this.lookupMetadata(tiddlers);
     var feed = this.atomFeed();
-    titles.forEach(function(title) {
-      feed.add(this.atomEntry(this.wiki.getTiddler(title)));
+    tiddlers.forEach(function(tiddler) {
+      feed.add(this.atomEntry(tiddler));
     }, this);
     return '<?xml version="1.0" encoding="utf-8"?>\n' + domBuilderToXml(feed);
   };

@@ -32,7 +32,7 @@ Defines $tw.utils.DomBuilder and extends DomBuilder with Tiddly Wiki addons.
    * @public
    */
   DomBuilder.prototype.renderTiddler = function renderTiddler(title) {
-    var widgetNode = $tw.wiki.makeWidget($tw.wiki.parseTiddler(title));
+    var widgetNode = $tw.wiki.makeWidget($tw.wiki.parseTiddler(title), {document: this.document});
     var container = new DomBuilder('div', this.document).toDOM();
     widgetNode.render(container, null);
     return this.add(container);

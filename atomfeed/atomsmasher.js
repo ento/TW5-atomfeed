@@ -81,7 +81,8 @@ Encapsulating class for constructing atom feeds
 
   /**
    * Lookup tiddler information for building an atom entry.
-   * @method lookupMetadata
+   * @method lookupEntryData
+   * @param {Object} tiddler target tiddler
    * @return {Object} hash of data
    * @private
    */

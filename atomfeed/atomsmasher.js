@@ -109,7 +109,7 @@ Encapsulating class for constructing atom feeds
    * @return {DomBuilder}
    * @private
    */
-  AtomSmasher.prototype.atomFeed = function atomHeader() {
+  AtomSmasher.prototype.atomFeed = function atomFeed() {
     return $tw.utils.DomBuilder('feed', this.document)
       .attr('xmlns', 'http://www.w3.org/2005/Atom')
       .add('title').renderText(this.metadata.title).end()

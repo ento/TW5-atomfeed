@@ -18,11 +18,21 @@ Macro to output tiddlers matching a filter to JSON
     {
       name: 'filter',
       default: '[!is[system]!has[draft.of]!sort[modified]]'
-    }
+    },
+    { name: 'title' },
+    { name: 'subtitle' },
+    { name: 'author' },
+    { name: 'feedpath' }
   ];
 
-  exports.run = function(filter) {
+  exports.run = function(filter, title, subtitle, author, feedpath) {
+    var metadata = {
+      title: title,
+      subtitle: subtitle,
+      author: author,
+      feedpath: feedpath
+    };
     return new AtomSmasher({wiki: this.wiki, document: this.document})
-      .feedify(this.wiki.filterTiddlers(filter));
+      .feedify(this.wiki.filterTiddlers(filter), metadata);
   };
 })();

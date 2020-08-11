@@ -59,21 +59,23 @@ Encapsulating class for constructing atom feeds
    * Lookup site information for caching
    * @method lookupMetadata
    * @param {Array} tiddlers list of tiddlers to process
+   * @param {Object} metadata optional metadata values to use
    * @return {Object} hash of metadata
    * @private
    */
-  AtomSmasher.prototype.lookupMetadata = function lookupMetadata(tiddlers) {
+  AtomSmasher.prototype.lookupMetadata = function lookupMetadata(tiddlers, metadata) {
     var atomserver = this.wiki.getTiddlerText('$:/config/atomserver');
     var lastUpdatedTiddler = Array.from(tiddlers).sort(function(a, b) {
       return b.fields.modified - a.fields.modified;
     })[0];
-    var sitetitle = this.wiki.getTiddlerText('$:/SiteTitle');
+    var sitetitle = metadata.title || this.wiki.getTiddlerText('$:/SiteTitle');
+    var feedpath = metadata.feedpath || 'atom.xml';
     return {
       title:    sitetitle,
-      subtitle: this.wiki.getTiddlerText('$:/SiteSubtitle'),
-      feedhref: pathJoin([atomserver, 'atom.xml']),
+      subtitle: metadata.subtitle || this.wiki.getTiddlerText('$:/SiteSubtitle'),
+      feedhref: pathJoin([atomserver, feedpath]),
       sitehref: atomserver,
-      author:   lastUpdatedTiddler ? lastUpdatedTiddler.fields.creator : '',
+      author:   metadata.author || (lastUpdatedTiddler ? lastUpdatedTiddler.fields.creator : ''),
       updated:  lastUpdatedTiddler ? toISODate(lastUpdatedTiddler.fields.modified) : '',
       uuid:     uuidHasher.run(sitetitle),
     };
@@ -174,14 +176,20 @@ Encapsulating class for constructing atom feeds
    *
    * @method feedify
    * @param {Array} titles the list of tiddlers to process
+   * @param {Object} metadata optional metadata to override the default with
+   * @param {String} metadata.title optional feed title (default: content of '$:/SiteTitle')
+   * @param {String} metadata.subtitle optional feed subtitle (default: content of '$:/SiteSubtitle')
+   * @param {String} metadata.author optional feed author (default: creator of the
+   * last modified tiddler of the given list of tiddlers)
+   * @param {String} metadata.feedpath optional URL path to the feed (default: 'atom.xml')
    * @return {String} the XML of a feed file as a String
    * @public
    */
-  AtomSmasher.prototype.feedify = function feedify(titles) {
+  AtomSmasher.prototype.feedify = function feedify(titles, metadata) {
     var tiddlers = titles.map(function(title) {
       return this.wiki.getTiddler(title);
     }, this);
-    this.metadata = this.lookupMetadata(tiddlers);
+    this.metadata = this.lookupMetadata(tiddlers, metadata);
     var feed = this.atomFeed();
     tiddlers.forEach(function(tiddler) {
       feed.add(this.atomEntry(tiddler));

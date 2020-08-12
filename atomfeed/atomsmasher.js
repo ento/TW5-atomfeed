@@ -74,6 +74,7 @@ Encapsulating class for constructing atom feeds
       title:    sitetitle,
       subtitle: metadata.subtitle || this.wiki.getTiddlerText('$:/SiteSubtitle'),
       feedhref: pathJoin([atomserver, feedpath]),
+      statichref: metadata.staticpath ? pathJoin([atomserver, metadata.staticpath]) : null,
       sitehref: atomserver,
       author:   metadata.author || (lastUpdatedTiddler ? lastUpdatedTiddler.fields.creator : ''),
       updated:  lastUpdatedTiddler ? toISODate(lastUpdatedTiddler.fields.modified) : '',
@@ -95,9 +96,6 @@ Encapsulating class for constructing atom feeds
       updated: toISODate(tiddler.getFieldString('modified')),
       uuid: uuidHasher.run(title),
       href: pathJoin([this.metadata.sitehref, toPermalink(title)]),
-      statichref: pathJoin([
-        this.metadata.sitehref, 'static', toFileName(title)
-      ]),
       summary: tiddler.getFieldString('summary'),
       author: tiddler.getFieldString('modifier') ||
         tiddler.getFieldString('creator') ||
@@ -143,17 +141,23 @@ Encapsulating class for constructing atom feeds
    */
   AtomSmasher.prototype.atomEntry = function atomEntry(tiddler) {
     var data = this.lookupEntryData(tiddler);
+    var self = this;
     return $tw.utils.DomBuilder('entry', this.document)
       .add('title').text(data.title).end()
       .add('link')
         .attr('href', data.href)
       .end()
       .bind(function() {
+        if (!self.metadata.statichref) {
+          return;
+        }
+        var href = pathJoin([
+          self.metadata.statichref, toFileName(data.title)
+        ]);
         this.add('link')
           .attr('rel', 'alternate')
           .attr('type', 'text/html')
-          .attr('href', data.statichref)
-          .end();
+          .attr('href', href);
       })
       .add('id').text(data.uuid).end()
       .add('updated').text(data.updated).end()

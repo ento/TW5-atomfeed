@@ -22,15 +22,17 @@ Macro to output tiddlers matching a filter to JSON
     { name: 'title' },
     { name: 'subtitle' },
     { name: 'author' },
-    { name: 'feedpath' }
+    { name: 'feedpath' },
+    { name: 'staticpath' }
   ];
 
-  exports.run = function(filter, title, subtitle, author, feedpath) {
+  exports.run = function(filter, title, subtitle, author, feedpath, staticpath) {
     var metadata = {
       title: title,
       subtitle: subtitle,
       author: author,
-      feedpath: feedpath
+      feedpath: feedpath,
+      staticpath: staticpath
     };
     return new AtomSmasher({wiki: this.wiki, document: this.document})
       .feedify(this.wiki.filterTiddlers(filter), metadata);

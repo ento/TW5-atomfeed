@@ -149,7 +149,7 @@ Encapsulating class for constructing atom feeds
         .attr('href', data.href)
       .end()
       .add('link')
-        .attr('rel', 'alternative')
+        .attr('rel', 'alternate')
         .attr('type', 'text/html')
         .attr('href', data.statichref)
       .end()

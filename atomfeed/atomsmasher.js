@@ -16,7 +16,7 @@ Encapsulating class for constructing atom feeds
   function toISODate(twDateString) {
     if (!twDateString) { return ''; }
     var twDate = $tw.utils.parseDate(twDateString);
-    return $tw.utils.formatDateString(twDate, "YYYY-0MM-0DDT0hh:0mm:0ss");
+    return $tw.utils.formatDateString(twDate, "[UTC]YYYY-0MM-0DDT0hh:0mm:0ssZ");
   }
 
   function pathJoin(parts){

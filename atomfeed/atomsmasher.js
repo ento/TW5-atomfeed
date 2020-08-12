@@ -148,11 +148,13 @@ Encapsulating class for constructing atom feeds
       .add('link')
         .attr('href', data.href)
       .end()
-      .add('link')
-        .attr('rel', 'alternate')
-        .attr('type', 'text/html')
-        .attr('href', data.statichref)
-      .end()
+      .bind(function() {
+        this.add('link')
+          .attr('rel', 'alternate')
+          .attr('type', 'text/html')
+          .attr('href', data.statichref)
+          .end();
+      })
       .add('id').text(data.uuid).end()
       .add('updated').text(data.updated).end()
       .bind(function() {

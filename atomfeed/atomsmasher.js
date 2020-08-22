@@ -64,7 +64,7 @@ Encapsulating class for constructing atom feeds
    * @private
    */
   AtomSmasher.prototype.lookupMetadata = function lookupMetadata(tiddlers, metadata) {
-    var atomserver = this.wiki.getTiddlerText('$:/config/atomserver');
+    var atomserver = this.wiki.getTiddlerText('$:/config/atomserver').trim();
     var lastUpdatedTiddler = Array.from(tiddlers).sort(function(a, b) {
       return b.fields.modified - a.fields.modified;
     })[0];

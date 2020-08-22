@@ -26,13 +26,14 @@ Defines $tw.utils.DomBuilder and extends DomBuilder with Tiddly Wiki addons.
    * wrapped div can be modified with `add()`, `text()`, and `attr()`.
    *
    * @method renderTiddler
+   * @param {Wiki} wiki a $tw.wiki instance
    * @param {String} title the tiddler title to render
    * @return {DomBuilder} a wrapped DomBuilder with the rendered nodes within
    * @chainable
    * @public
    */
-  DomBuilder.prototype.renderTiddler = function renderTiddler(title) {
-    var widgetNode = $tw.wiki.makeWidget($tw.wiki.parseTiddler(title), {document: this.document});
+  DomBuilder.prototype.renderTiddler = function renderTiddler(wiki, title) {
+    var widgetNode = wiki.makeWidget(wiki.parseTiddler(title), {document: this.document});
     var container = new DomBuilder('div', this.document).toDOM();
     widgetNode.render(container, null);
     return this.add(container);
@@ -42,14 +43,14 @@ Defines $tw.utils.DomBuilder and extends DomBuilder with Tiddly Wiki addons.
    * Render TiddlyWiki text and add it as a text node.
    *
    * @method renderText
+   * @param {Wiki} wiki a $tw.wiki instance
    * @param {String} text the tiddlywiki text to render
    * @return {DomBuilder} a wrapped DomBuilder with the rendered nodes within
    * @chainable
    * @public
    */
-  DomBuilder.prototype.renderText = function renderText(text) {
-    var rendered =
-      $tw.wiki.renderText('text/plain', 'text/vnd.tiddlywiki', text);
+  DomBuilder.prototype.renderText = function renderText(wiki, text) {
+    var rendered = wiki.renderText('text/plain', 'text/vnd.tiddlywiki', text);
     return this.text(rendered);
   };
 

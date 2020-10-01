@@ -95,7 +95,6 @@ Encapsulating class for constructing atom feeds
       title: title,
       updated: toISODate(tiddler.getFieldString('modified')),
       uuid: uuidHasher.run(title),
-      href: pathJoin([this.metadata.sitehref, toPermalink(title)]),
       summary: tiddler.getFieldString('summary'),
       author: tiddler.getFieldString('modifier') ||
         tiddler.getFieldString('creator') ||
@@ -131,6 +130,76 @@ Encapsulating class for constructing atom feeds
       .add('updated').text(this.metadata.updated).end();
   };
 
+  AtomSmasher.prototype.entryTitle = function entryTitle(fn) {
+    if (arguments.length) {
+      this._entryTitle = fn;
+      return this;
+    } else {
+      return this._entryTitle || ((data) => data.title)
+    }
+  };
+
+  AtomSmasher.prototype.entryHref = function entryHref(fn) {
+    if (arguments.length) {
+      this._entryHref = fn;
+      return this;
+      return this;
+    } else {
+      return this._entryHref || ((data, builder) => pathJoin(
+        [builder.metadata.sitehref, toPermalink(data.title)]))
+    }
+  };
+
+  AtomSmasher.prototype.entryId = function entryId(fn) {
+    if (arguments.length) {
+      this._entryId = fn;
+      return this;
+    } else {
+      return this._entryId || ((data) => data.uuid)
+    }
+  };
+
+  AtomSmasher.prototype.entryUpdated = function entryUpdated(fn) {
+    if (arguments.length) {
+      this._entryUpdated = fn;
+      return this;
+    } else {
+      return this._entryUpdated || ((data) => data.updated)
+    }
+  };
+
+  AtomSmasher.prototype.entrySummary = function entrySummary(fn) {
+    if (arguments.length) {
+      this._entrySummary = fn;
+      return this;
+    } else {
+      return this._entrySummary || ((data) => data.summary)
+    }
+  };
+
+  AtomSmasher.prototype.entryContent = function entryContent(fn) {
+    if (arguments.length) {
+      this._entryContent = fn;
+      return this;
+    } else {
+      return this._entryContent || ((data, builder, dom) => {
+        dom
+          .attr('type', 'xhtml')
+          .renderTiddler(builder.wiki, data.title)
+          .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+      })
+    }
+  };
+
+  AtomSmasher.prototype.entryAuthor = function entryAuthor(fn) {
+    if (arguments.length) {
+      this._entryAuthor = fn;
+      return this;
+    } else {
+      return this._entryAuthor || ((data) => data.author)
+    };
+  };
+
   /**
    * Return a DomBuilder for a specific ATOM entry from a Tiddler.
    *
@@ -143,9 +212,9 @@ Encapsulating class for constructing atom feeds
     var data = this.lookupEntryData(tiddler);
     var self = this;
     return $tw.utils.DomBuilder('entry', this.document)
-      .add('title').text(data.title).end()
+      .add('title').text(this.entryTitle()(data, this)).end()
       .add('link')
-        .attr('href', data.href)
+        .attr('href', this.entryHref()(data, this))
       .end()
       .bind(function() {
         if (!self.metadata.statichref) {
@@ -159,21 +228,22 @@ Encapsulating class for constructing atom feeds
           .attr('type', 'text/html')
           .attr('href', href);
       })
-      .add('id').text(data.uuid).end()
-      .add('updated').text(data.updated).end()
+      .add('id').text(this.entryId()(data, this)).end()
+      .add('updated').text(this.entryUpdated()(data, this)).end()
       .bind(function() {
-        if (data.summary) {
-          this.add('summary').text(data.summary);
+        var summary = self.entrySummary()(data, self);
+        if (summary) {
+          this.add('summary').text(summary);
         }
       })
       .add('content')
-        .attr('type', 'xhtml')
-        .renderTiddler(this.wiki, data.title)
-          .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+        .bind(function() {
+          self.entryContent()(data, self, this)
+        })
         .end()
       .end()
       .add('author')
-        .add('name').text(data.author).end()
+        .add('name').text(this.entryAuthor()(data, self)).end()
       .end();
   };
 
